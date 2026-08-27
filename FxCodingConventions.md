@@ -37,10 +37,12 @@ import { FxButton, FxInput } from "@/components/FxUI/Forms";
 
 ## File Header
 
-Every source file starts with:
+Every source file starts with the header line, followed by exactly one blank line:
 
 ```js
 /* src/path/File.js | Short purpose | Sree | YYYY-MM-DD */
+
+import …
 ```
 
 ---
@@ -53,13 +55,26 @@ Use the standard divider between major logical sections.
 /* - - - - - - - - - - - - - - - - */
 ```
 
-Placement rules:
+Placement rules — the divider is always **tight above, one blank line below**:
 
+* No blank line before a divider, ever — it sits on the very next line after whatever ends (the last import, a closing `}`, a closing `};`).
+* Exactly one blank line after a divider, then the next section starts.
 * Place it after the full import block, not between imports.
-* Place it immediately after a function block ends when separating the next major section.
-* Do not leave an extra blank line before the divider.
-* End source files with the divider.
+* End source files with the divider as the last line (no blank line before it).
 * Do not overuse it inside short files.
+
+```js
+/* src/lib/FxUtils.js | Generic helpers | Sree | 2026-08-27 */
+
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+/* - - - - - - - - - - - - - - - - */
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+/* - - - - - - - - - - - - - - - - */
+```
 
 ---
 
