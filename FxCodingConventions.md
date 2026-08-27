@@ -158,7 +158,7 @@ Do not place product-specific logic inside `FxUI`.
 
 ## Storage Keys
 
-* Never bake a client/project name (e.g. "acme") into persisted keys — clients change, the code keeps the `Fx` signature.
-* There is exactly ONE localStorage key — the app root, named `Fx<App>` and defined once as **`FX_STORAGE_ROOT`** — holding a single JSON object; every setting is a FIELD inside it, so the dev inspector shows just one expandable key.
+* Persisted keys carry the `Fx` signature only — never a client, product, or project name. Clients and products change; the storage contract doesn't.
+* There is exactly ONE localStorage key — the root **`Fx`** (`FX_STORAGE_ROOT`) — holding a single JSON object. Every setting is a FIELD inside it, so the dev inspector shows just one expandable key. Origins are already isolated per domain, so one root never collides across apps.
 * Field names live in `STORAGE_KEYS` (`src/lib/FxConstants.js`); read/write them ONLY via `getStored` / `setStored` from `src/lib/FxStorage.js` — never touch `window.localStorage` directly at a call site.
 * Keep field names and values terse and self-evident (e.g. `Theme: "light" | "dark"`, `Sidebar-Open: "Y" | "N"`).
