@@ -1,3 +1,5 @@
+<!-- FxCodingConventions.md | Fx coding mandate: setup, naming, structure, headers, styling, SEO, working rules | Sree | 2026-08-27 | FxD20261106T2052 -->
+
 # Fx Coding Conventions
 
 ## Project Setup
@@ -72,8 +74,11 @@ import …
 ```
 
 * The path must match the file's real path.
-* The date is the creation date. **When you edit an existing file, keep the original date and append the edit time** (get it from `date`, do not guess): `/* src/path/File.js | Short purpose | Sree | 2026-10-31 | Updated 2026-11-06 20:34 IST */`. Replace the `Updated` stamp on each later edit.
-* Markdown and other comment styles follow the same pattern, for example `<!-- path | purpose | Sree | date | Updated date time -->`.
+* The date is the creation date and keeps the plain `YYYY-MM-DD` form.
+* **Every edit appends or replaces the last-edit stamp**, `FxD` + `YYYYMMDD` + `T` + `HHMM` (24-hour, local time, IST for Fx projects), for example `FxD20261105T2049`. The token is one string, sortable, and found with `grep FxD`.
+* Generate it with `date '+FxD%Y%m%dT%H%M'`. Never type it from memory or guess the time.
+* Full form: `/* src/path/File.js | Short purpose | Sree | 2026-10-31 | FxD20261106T2034 */`. A new file carries both the creation date and a stamp for its first edit.
+* Markdown and other comment styles follow the same pattern, for example `<!-- path | purpose | Sree | 2026-10-31 | FxD20261106T2034 -->`.
 
 ---
 
