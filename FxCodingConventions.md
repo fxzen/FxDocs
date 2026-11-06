@@ -1,5 +1,29 @@
 # Fx Coding Conventions
 
+## Project Setup
+
+* Build new projects as clean Next.js App Router apps: `src/` folder, JavaScript and JSX only (no TypeScript, no `.tsx`), `@/` import alias, pnpm.
+* Prefer SSR and Server Components by default. Keep the base app lightweight and minimal.
+* Keep route files thin and push logic into smaller helpers or components.
+* Do not add backend, API, database, auth, CMS or persistence unless explicitly requested.
+* Do not add extra UI dependencies by default. Add Radix, Lucide, shadcn or similar only when there is a real component need.
+* Keep product-specific logic out of the generic foundation. Keep app globals, copy, theme and reusable UI in separate files or folders.
+* **Ask before creating any new `Fx` file** or expanding the generic foundation with new shared pieces.
+* Check the Node requirement of the Next version in use (Next 16 needs Node `>=20.19`) and pin `engines.node` in `package.json` to the Node version the host runs.
+* On a fresh clone, run `pnpm install` first. `node_modules` is gitignored, so a missing install shows up as `Module not found`.
+* After every `shadcn add`, check the generated files for `from "cn"` (an unvetted npm package named `cn`). Replace it with the project's own `cn()` in `src/lib` (`clsx` + `tailwind-merge`) and remove that dependency.
+
+```bash
+pnpm create next-app@latest <your-project-name> --js --src-dir --app --eslint --import-alias "@/*"
+cd <your-project-name>
+pnpm add lucide-react clsx tailwind-merge
+pnpm dlx shadcn@latest init
+pnpm install
+pnpm dev
+```
+
+---
+
 ## Naming
 
 * Prefix reusable shared components with `Fx`.
@@ -12,6 +36,7 @@
 
   * `APP_NAME`, `ROUTES`, `SIDEBAR_WIDTHS`, `NAV_ITEMS`
 * Use `@/` imports instead of deep relative paths.
+* Keep all user-facing copy, strings, labels, phrases and microcopy in `src/lib/FxCopy.md`.
 
 **The `Fx` boundary — the rule behind the prefix, not just the prefix itself.** `Fx` is the reusable design-system layer: generic, product-agnostic, carries no idea what the product's actual domain objects are. The product/domain layer gets its own separate prefix and composes `Fx` primitives into product behavior — never the other way around; an `Fx` component or helper never imports or references product-specific code. This is enforced by convention and file placement, not a lint rule, so it only holds as long as people (and agents) actually keep it — worth restating explicitly in any project that reuses this system, since "generic vs. product" erodes quietly if nobody's watching for it. (Each project picks its own short product prefix — a two-letter code, e.g. `Xk` for xkit — and documents where that split lives in its own architecture doc.)
 
@@ -23,6 +48,7 @@
 * `src/components/FxUI` → Fx design-system components, organized into domain subfolders (e.g. Forms, Navigation, DataDisplay, Overlays — the actual set is project-specific and will grow; check the project's own architecture doc for the current list rather than assuming this one's example below is exhaustive). Each domain folder exposes an `index.js` barrel.
 * `src/lib` → constants, theme, utilities, helpers — same generic-vs-product split as everywhere else (see the `Fx` boundary note above).
 * `src/FxDocs` → design system and architecture documentation.
+* `private/Fx` → private brand assets: OG image, favicon and related SEO artwork sources.
 
 Use domain `index.js` barrels for imports where possible.
 
@@ -44,6 +70,10 @@ Every source file starts with the header line, followed by exactly one blank lin
 
 import …
 ```
+
+* The path must match the file's real path.
+* The date is the creation date. **When you edit an existing file, keep the original date and append the edit time** (get it from `date`, do not guess): `/* src/path/File.js | Short purpose | Sree | 2026-10-31 | Updated 2026-11-06 20:34 IST */`. Replace the `Updated` stamp on each later edit.
+* Markdown and other comment styles follow the same pattern, for example `<!-- path | purpose | Sree | date | Updated date time -->`.
 
 ---
 
@@ -94,6 +124,8 @@ export function cn(...inputs) {
 * Server Components by default.
 * Add `"use client"` only where interactivity is required.
 * Keep client-only logic in small leaf components.
+* Avoid client-side fetching unless the feature truly needs it.
+* Keep state local unless it is genuinely shared. Avoid premature global state, and use static or local data until persistence is explicitly needed.
 
 ---
 
@@ -173,7 +205,38 @@ Do not place product-specific logic inside `FxUI`.
 
 ## Storage Keys
 
+* Do not add `localStorage` unless the requirement is explicit. If persistence is added, keep keys and access centralized as below.
 * Persisted keys carry the `Fx` signature only — never a client, product, or project name. Clients and products change; the storage contract doesn't.
 * There is exactly ONE localStorage key — the root **`Fx`** (`FX_STORAGE_ROOT`) — holding a single JSON object. Every setting is a FIELD inside it, so the dev inspector shows just one expandable key. Origins are already isolated per domain, so one root never collides across apps.
 * Field names live in `STORAGE_KEYS` (`src/lib/FxConstants.js`); read/write them ONLY via `getStored` / `setStored` from `src/lib/FxStorage.js` — never touch `window.localStorage` directly at a call site.
 * Keep field names and values terse and self-evident (e.g. `Theme: "light" | "dark"`, `Sidebar-Open: "Y" | "N"`).
+
+---
+
+## Routing
+
+* Add routes only when the information architecture is confirmed.
+* Keep landing pages minimal until the content direction is settled. Avoid adding feature pages too early.
+
+---
+
+## SEO & Assets
+
+* Keep the main metadata in the App Router layout and in route-level metadata files (`opengraph-image`, `icon`, `apple-icon`, `robots`, `sitemap`).
+* Include title, description, canonical, Open Graph and Twitter metadata, plus Organization and WebSite JSON-LD where relevant.
+* Prefer one shared SEO pattern over ad hoc page-by-page metadata. Keep shared SEO copy in `src/lib/FxCopy.md`.
+* Keep favicon and social preview source assets in `private/Fx`, and wire them into the project only where needed. Keep brand asset filenames simple and explicit.
+* Values that cannot read CSS tokens (OG image, Apple icon, `theme-color`, HTML email styles) mirror the light and dark token colors as named constants at the top of the file, with a comment pointing to `globals.css`.
+* Ship `favicon.ico` as a real multi-size ICO (16, 32, 48) generated from the SVG, not a renamed SVG.
+
+---
+
+## Working Rules
+
+* Comments are terse, one line, with no rationale essays. Field labels use sentence case; action and button labels use Title Case.
+* Club related functions into few files. Add no speculative abstractions.
+* Verify a table's real columns before writing SQL.
+* When replacing a file, upload the new one before deleting the old one.
+* In MDX docs, write placeholders as `[name]`, never `<name>` or `{name}`, and write emails as plain text. Compile the pages you touched before pushing.
+* Git: stage specific paths, never `git add -A`. Commit and push permissions come from the project's own `CLAUDE.md`; never push without explicit per-push approval, and never change a remote unless asked.
+* No self-initiated browser testing. Secrets files are never committed and are gitignored by name.
